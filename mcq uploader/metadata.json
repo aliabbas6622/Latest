@@ -1,0 +1,5 @@
+{
+  "name": "Aptivo MCQ Manager",
+  "description": "An admin-only content management system for managing multiple-choice questions with manual entry and Excel bulk upload capabilities.",
+  "requestFramePermissions": []
+}
