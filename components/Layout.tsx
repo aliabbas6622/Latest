@@ -48,6 +48,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isManualCollapsed, setIsManualCollapsed] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isNotifOpen, setIsNotifOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -72,19 +73,21 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         navigate('/');
     };
 
-    const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => {
+    const NavItem = ({ to, icon: Icon, label, isCollapsed }: { to: string, icon: any, label: string, isCollapsed?: boolean }) => {
+
         const isActive = location.pathname === to;
         return (
             <Link
                 to={to}
                 onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 group ${isActive
-                    ? 'bg-primary-50 text-primary-700 shadow-sm translate-x-1'
+                className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-sm font-medium transition-all duration-200 group ${isActive
+                    ? 'bg-primary-50 text-primary-700 shadow-sm'
                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1'
                     }`}
+                title={isCollapsed ? label : ""}
             >
-                <Icon size={18} className={`transition-colors duration-200 ${isActive ? 'text-primary-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
-                {label}
+                <Icon size={18} className={`transition-colors duration-200 shrink-0 ${isActive ? 'text-primary-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                {!isCollapsed && <span className="whitespace-nowrap overflow-hidden transition-all">{label}</span>}
             </Link>
         );
     };
@@ -92,6 +95,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Mode Detection
     const isUnderstandMode = location.pathname.includes('/understand/');
     const isApplyMode = location.pathname.includes('/apply/');
+    const isCollapsed = isUnderstandMode || isApplyMode || isManualCollapsed;
 
     return (
         <div className="min-h-screen flex transition-colors duration-500 bg-[#F5F7FA]">
@@ -105,18 +109,32 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             {/* Sidebar - Transitioning on mobile */}
             <aside className={`
-                fixed md:sticky top-0 left-0 h-screen w-64 bg-white border-r border-slate-200 z-40 
-                flex flex-col transition-all duration-300 ease-in-out
+                fixed md:sticky top-0 left-0 h-screen
+                bg-white border-r border-slate-200 z-40 
+                flex flex-col transition-all duration-300 ease-in-out shadow-[4px_0_24px_rgba(0,0,0,0.02)]
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-                ${(isUnderstandMode || isApplyMode) ? 'md:-ml-64 opacity-0 pointer-events-none' : 'md:ml-0 opacity-100'}
+                ${isCollapsed ? 'w-20' : 'w-64'}
             `}>
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between gap-2">
+                <div className={`p-6 border-b border-slate-100 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} gap-2 transition-all relative group`}>
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-md shadow-primary-500/20">
+                        <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-md shadow-primary-500/20 shrink-0">
                             <span className="text-white font-bold text-lg">A</span>
                         </div>
-                        <span className="text-xl font-bold tracking-tight text-slate-800">APTIVO</span>
+                        {!isCollapsed && (
+                            <span className="text-xl font-bold tracking-tight text-slate-800 whitespace-nowrap overflow-hidden transition-all duration-300">
+                                APTIVO
+                            </span>
+                        )}
                     </div>
+
+                    {/* Manual Toggle Button (Desktop) */}
+                    <button
+                        onClick={() => setIsManualCollapsed(!isManualCollapsed)}
+                        className={`hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-400 hover:text-primary-600 shadow-sm transition-all opacity-0 group-hover:opacity-100 z-50`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}><path d="m15 18-6-6 6-6" /></svg>
+                    </button>
+
                     <button
                         onClick={() => setIsSidebarOpen(false)}
                         className="md:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
@@ -125,39 +143,40 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     </button>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+                <nav className="flex-1 p-3 space-y-1 overflow-y-auto custom-scrollbar overflow-x-hidden">
                     {user?.role === UserRole.SUPER_ADMIN && (
                         <>
-                            <NavItem to="/super-admin/dashboard" icon={LayoutDashboard} label="Dashboard" />
-                            <NavItem to="/super-admin/analysis" icon={TrendingUp} label="Platform Insights" />
-                            <NavItem to="/super-admin/questions" icon={BookOpen} label="Question Bank" />
-                            <NavItem to="/super-admin/materials" icon={Library} label="Study Materials" />
+                            <NavItem to="/super-admin/dashboard" icon={LayoutDashboard} label="Dashboard" isCollapsed={isCollapsed} />
+                            <NavItem to="/super-admin/analysis" icon={TrendingUp} label="Platform Insights" isCollapsed={isCollapsed} />
+                            <NavItem to="/super-admin/questions" icon={BookOpen} label="Question Bank" isCollapsed={isCollapsed} />
+                            <NavItem to="/super-admin/materials" icon={Library} label="Study Materials" isCollapsed={isCollapsed} />
                         </>
                     )}
                     {user?.role === UserRole.INSTITUTION_ADMIN && (
                         <>
-                            <NavItem to="/institution/dashboard" icon={LayoutDashboard} label="Dashboard" />
-                            <NavItem to="/institution/analysis" icon={BarChart2} label="Campus Analysis" />
-                            <NavItem to="/institution/students" icon={Users} label="Students" />
-                            <NavItem to="/institution/universities" icon={GraduationCap} label="Curriculum" />
+                            <NavItem to="/institution/dashboard" icon={LayoutDashboard} label="Dashboard" isCollapsed={isCollapsed} />
+                            <NavItem to="/institution/analysis" icon={BarChart2} label="Campus Analysis" isCollapsed={isCollapsed} />
+                            <NavItem to="/institution/students" icon={Users} label="Students" isCollapsed={isCollapsed} />
+                            <NavItem to="/institution/universities" icon={GraduationCap} label="Curriculum" isCollapsed={isCollapsed} />
                         </>
                     )}
                     {user?.role === UserRole.STUDENT && (
                         <>
-                            <NavItem to="/student/home" icon={LayoutDashboard} label="Home" />
-                            <NavItem to="/student/analysis" icon={TrendingUp} label="My Performance" />
-                            <NavItem to="/student/mistakes" icon={AlertOctagon} label="Mistake Log" />
+                            <NavItem to="/student/home" icon={LayoutDashboard} label="Home" isCollapsed={isCollapsed} />
+                            <NavItem to="/student/analysis" icon={TrendingUp} label="My Performance" isCollapsed={isCollapsed} />
+                            <NavItem to="/student/mistakes" icon={AlertOctagon} label="Mistake Log" isCollapsed={isCollapsed} />
                         </>
                     )}
                 </nav>
 
-                <div className="p-4 border-t border-slate-100">
+                <div className="p-3 border-t border-slate-100">
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 w-full text-left rounded-lg text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all active:scale-95 duration-200"
+                        className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 w-full text-left rounded-lg text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all active:scale-95 duration-200 group`}
+                        title={isCollapsed ? "Sign Out" : ""}
                     >
-                        <LogOut size={18} />
-                        Sign Out
+                        <LogOut size={18} className="shrink-0" />
+                        {!isCollapsed && <span className="whitespace-nowrap overflow-hidden">Sign Out</span>}
                     </button>
                 </div>
             </aside>
@@ -289,8 +308,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                             <Link
                                                 to="/profile"
                                                 className={`flex items-center gap-3 px-4 py-2.5 text-sm font-bold transition-all border-l-4 ${location.pathname === '/profile'
-                                                        ? 'text-white bg-white/10 border-primary-500'
-                                                        : 'text-white/60 hover:text-white hover:bg-white/5 border-transparent'
+                                                    ? 'text-white bg-white/10 border-primary-500'
+                                                    : 'text-white/60 hover:text-white hover:bg-white/5 border-transparent'
                                                     }`}
                                                 onClick={() => setIsDropdownOpen(false)}
                                             >

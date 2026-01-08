@@ -1,8 +1,0 @@
-project_id = tywhyirpwswadisbgtit
-
-publishable_key = sb_publishable_733-LZ3sKho7paTdd9kR8w_7dNGwngF
-
-secrects_key = sb_secret_TihWg
-GnwKkVRWF7SPQYw2A_DrqiQ4yt
-
-legacy_JWT_key = oT5ebasSsnoppwb/O+V/PpKTM9e7EsMZtHdE4pEj+DU50K8OItaWO8foFu9VxEAVQ1BV436foe8V6BiIGIcSMA==

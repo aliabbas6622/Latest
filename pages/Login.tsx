@@ -19,41 +19,28 @@ const Login = () => {
         setError('');
         setLoading(true);
 
-        // Simulate network delay
-        setTimeout(async () => {
-            try {
-                await login(email, password, rememberMe);
+        try {
+            const user = await login(email, password, rememberMe);
 
-                // Get user role logic (Works for both Mock and Supabase)
-                let role = '';
-
-                // 1. Try Local Storage (Mock Mode)
-                const storedUser = localStorage.getItem('aptivo_session_user') || sessionStorage.getItem('aptivo_session_user');
-                if (storedUser) {
-                    role = JSON.parse(storedUser).role;
-                } else {
-                    // 2. Try Supabase Profile (Supabase Mode)
-                    // We need to dynamically import this to avoid circular dependencies or issues if context is used differently
-                    // But since we are inside a component, we can use the helper we will import
-                    const { getMyProfile } = await import('../supabase/db');
-                    const profile = await getMyProfile();
-                    if (profile) role = profile.role;
-                }
-
+            if (user) {
+                const role = user.role;
                 if (role === UserRole.SUPER_ADMIN) navigate('/super-admin/dashboard');
                 else if (role === UserRole.INSTITUTION_ADMIN) navigate('/institution/dashboard');
                 else if (role === UserRole.STUDENT) navigate('/student/home');
                 else {
-                    // Fallback if role is not recognized or found
-                    setError('User profile not found. Please contact support.');
+                    setError('Unknown user role. Please contact support.');
                     setLoading(false);
                 }
-
-            } catch (err: any) {
-                setError(err.message || 'Login failed');
+            } else {
+                setError('Login failed. Please check your credentials.');
                 setLoading(false);
             }
-        }, 800);
+
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message || 'Login failed');
+            setLoading(false);
+        }
     };
 
     return (

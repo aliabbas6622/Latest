@@ -17,7 +17,7 @@ interface UnifiedUser {
 interface AuthContextType {
   user: UnifiedUser | null;
   isAuthenticated: boolean;
-  login: (email: string, pass: string, remember: boolean) => Promise<void>;
+  login: (email: string, pass: string, remember: boolean) => Promise<UnifiedUser | null>;
   logout: () => void;
   isLoading: boolean;
   isSupabase: boolean;
@@ -119,8 +119,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     initAuth();
   }, [useSupabase]);
 
-  const login = async (email: string, pass: string, remember: boolean) => {
+  const login = async (email: string, pass: string, remember: boolean): Promise<UnifiedUser | null> => {
     setIsLoading(true);
+    let loggedInUser: UnifiedUser | null = null;
 
     try {
       if (useSupabase) {
@@ -132,32 +133,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const profile = await getMyProfile();
           if (!profile) throw new Error('Profile not found');
 
-          setUser({
+          loggedInUser = {
             id: profile.id,
             email: authUser.email || '',
             name: profile.full_name,
             role: profile.role,
             institutionId: profile.institute_id,
-          });
+          };
+          setUser(loggedInUser);
         } catch (err: any) {
           console.error('Login profile fetch failed:', err);
           // Fallback
           if (authUser.user_metadata?.role) {
-            setUser({
+            loggedInUser = {
               id: authUser.id,
               email: authUser.email || '',
               name: authUser.user_metadata.full_name || 'User',
               role: authUser.user_metadata.role,
               institutionId: authUser.user_metadata.institute_id,
-            });
+            };
+            setUser(loggedInUser);
           } else {
-            // If no metadata and profile fetch failed, we can't do much. 
-            // But we can assume it's a student for now or re-throw
-            // If it is loop error, re-throw might be bad.
-            // But since we fixed metadata via script, this path should work!
             if (JSON.stringify(err).includes('recursion')) {
-              // Should not happen if metadata is set AND we fallback? 
-              // Ah, if metadata is missing, we come here.
               throw new Error('Database error: Please run the fix_recursion.sql script.');
             }
             throw err;
@@ -167,7 +164,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Mock backend auth (existing logic)
         const { user: mockUser } = await mockDb.login(email, pass);
 
-        const unifiedUser: UnifiedUser = {
+        loggedInUser = {
           id: mockUser.id,
           email: mockUser.email,
           name: mockUser.name,
@@ -175,7 +172,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           institutionId: mockUser.institutionId,
         };
 
-        setUser(unifiedUser);
+        setUser(loggedInUser);
 
         const userStr = JSON.stringify(mockUser);
         if (remember) {
@@ -189,6 +186,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } finally {
       setIsLoading(false);
     }
+    return loggedInUser;
   };
 
   const logout = async () => {
