@@ -182,5 +182,99 @@ export const studentService = {
             return null;
         }
         return data;
+    },
+
+    async getStreakData(userId: string) {
+        // Fetch streak data and join with profile -> institute to get threshold
+        const { data, error } = await (supabase
+            .from('user_streaks')
+            .select(`
+                *,
+                profiles (
+                    timezone,
+                    institutes (
+                        streak_threshold
+                    )
+                )
+            `)
+            .eq('user_id', userId)
+            .single() as any);
+
+        if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching streak data:', error);
+            throw error;
+        }
+
+        // Extract threshold from join
+        const threshold = data?.profiles?.institutes?.streak_threshold || 5;
+
+        return {
+            ...(data || {
+                current_streak: 0,
+                longest_streak: 0,
+                last_streak_date: null,
+                grace_days: 0,
+                total_streak_days: 0
+            }),
+            threshold
+        };
+    },
+
+    async getTodayProgress(userId: string) {
+        // Get local date string YYYY-MM-DD
+        // Note: Ideally the client should pass their local date, 
+        // but for now we'll use the browser's local date as a fallback
+        const localDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format
+
+        const { data, error } = await supabase
+            .from('daily_activity')
+            .select('attempt_count, is_streak_day')
+            .eq('user_id', userId)
+            .eq('activity_date', localDate)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching today progress:', error);
+            throw error;
+        }
+
+        return data || {
+            attempt_count: 0,
+            is_streak_day: false
+        };
+    },
+
+    async getLatestContent() {
+        const [sets, questions] = await Promise.all([
+            supabase
+                .from('apply_sets')
+                .select('id, title, topic, created_at')
+                .eq('status', 'PUBLISHED')
+                .order('created_at', { ascending: false })
+                .limit(3),
+            supabase
+                .from('questions')
+                .select('id, topic, subtopic, created_at')
+                .eq('status', 'PUBLISHED')
+                .order('created_at', { ascending: false })
+                .limit(5)
+        ]);
+
+        return {
+            sets: sets.data || [],
+            questions: questions.data || []
+        };
+    },
+
+    async updateUserTimezone(userId: string, timezone: string) {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ timezone } as any)
+            .eq('id', userId);
+
+        if (error) {
+            console.error('Error updating timezone:', error);
+            throw error;
+        }
     }
 };

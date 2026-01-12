@@ -6,6 +6,7 @@ import { University } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { Lock, ArrowRight, MapPin, AlertOctagon, Zap, BookOpen, TrendingUp, Bell, ChevronRight, Info, Target, LayoutGrid } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { StreakWidget } from '../components/StreakWidget';
 
 const StudentDashboard = () => {
     const { user } = useAuth();
@@ -18,6 +19,8 @@ const StudentDashboard = () => {
     });
     const [notifications, setNotifications] = useState<any[]>([]);
     const [institution, setInstitution] = useState<any>(null);
+    const [streakData, setStreakData] = useState<any>(null);
+    const [todayProgress, setTodayProgress] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -43,6 +46,15 @@ const StudentDashboard = () => {
                         totalMistakes: (analyticData.totalAttempts - analyticData.correctAttempts)
                     });
 
+                    if (user) {
+                        const [sData, tProgress] = await Promise.all([
+                            studentService.getStreakData(user.id),
+                            studentService.getTodayProgress(user.id)
+                        ]);
+                        setStreakData(sData);
+                        setTodayProgress(tProgress);
+                    }
+
                     if (user.institutionId) {
                         const instData = await studentService.getUniversityDetails(user.institutionId);
                         setInstitution(instData);
@@ -57,6 +69,18 @@ const StudentDashboard = () => {
 
         loadDashboardData();
     }, [user]);
+
+    // Automatic Timezone Sync
+    useEffect(() => {
+        if (user && streakData) {
+            const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            // The streakData object now includes profiles join with timezone
+            if (streakData.profiles?.timezone !== detectedTz) {
+                console.log(`Syncing timezone: ${detectedTz}`);
+                studentService.updateUserTimezone(user.id, detectedTz).catch(console.error);
+            }
+        }
+    }, [user, streakData]);
 
     const isUnlocked = (univ: University) => {
         return user?.institutionId && univ.unlockedForIds.includes(user.institutionId);
@@ -220,6 +244,16 @@ const StudentDashboard = () => {
 
                 {/* Sidebar - Personal Details & Institution Info */}
                 <div className="w-full lg:w-80 space-y-6">
+                    {streakData && todayProgress && (
+                        <StreakWidget
+                            currentStreak={streakData.current_streak}
+                            longestStreak={streakData.longest_streak}
+                            attemptCount={todayProgress.attempt_count}
+                            threshold={streakData.threshold || 5}
+                            isStreakDay={todayProgress.is_streak_day}
+                        />
+                    )}
+
                     {institution && (
                         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-soft animate-fade-in" style={{ animationDelay: '0.4s' }}>
                             <div className="flex items-center gap-3 mb-6">

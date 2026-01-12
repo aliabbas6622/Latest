@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '../supabase/client';
 import { useAuth } from '../context/AuthContext';
 import { UserRole } from '../types';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -55,17 +56,46 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [unreadCount, setUnreadCount] = useState(0);
 
     React.useEffect(() => {
-        if (user) {
+        if (user && supabase) {
             fetchNotifications();
-            // Optional: Set up real-time subscription here
+
+            // Real-time notification listener
+            const channel = supabase
+                .channel('notifications-db-changes')
+                .on(
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'notifications' },
+                    () => {
+                        console.log('New notification received!');
+                        fetchNotifications();
+                    }
+                )
+                .subscribe();
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
         }
     }, [user]);
 
     const fetchNotifications = async () => {
-        const data = await notificationService.getNotifications();
+        if (!user) return;
+        const data = await notificationService.getNotifications(user.id);
         setNotifications(data);
-        // For MVP, we assume any fetched notif is "new" until the bell is clicked
-        setUnreadCount(data.length > 0 ? 1 : 0);
+        const unreadRows = data.filter(n => !n.is_read);
+        setUnreadCount(unreadRows.length);
+    };
+
+    const handleMarkAllAsRead = async () => {
+        if (!user) return;
+        await notificationService.markAllAsRead(user.id);
+        await fetchNotifications();
+    };
+
+    const handleNotificationClick = async (notif: Notification) => {
+        if (!user || notif.is_read) return;
+        await notificationService.markAsRead(user.id, notif.id);
+        await fetchNotifications();
     };
 
     const handleLogout = () => {
@@ -95,7 +125,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Mode Detection
     const isUnderstandMode = location.pathname.includes('/understand/');
     const isApplyMode = location.pathname.includes('/apply/');
-    const isCollapsed = isUnderstandMode || isApplyMode || isManualCollapsed;
+    const [isHovered, setIsHovered] = useState(false);
+
+    // Collapsed logic: Collapsed if in specific modes OR manually collapsed, BUT NOT if hovered
+    const isCollapsed = (isUnderstandMode || isApplyMode || isManualCollapsed) && !isHovered;
 
     return (
         <div className="min-h-screen flex transition-colors duration-500 bg-[#F5F7FA]">
@@ -108,10 +141,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             )}
 
             {/* Sidebar - Transitioning on mobile */}
-            <aside className={`
-                fixed md:sticky top-0 left-0 h-screen
+            <aside
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className={`
+                fixed md:sticky top-0 left-0 h-screen md:h-[calc(100vh-2rem)]
                 bg-white border-r border-slate-200 z-40 
                 flex flex-col transition-all duration-300 ease-in-out shadow-[4px_0_24px_rgba(0,0,0,0.02)]
+                md:rounded-br-3xl
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
                 ${isCollapsed ? 'w-20' : 'w-64'}
             `}>
@@ -241,7 +278,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                 <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-scale-in origin-top-right">
                                     <div className="p-4 border-b border-slate-50 flex items-center justify-between">
                                         <h3 className="font-bold text-slate-900">Notifications</h3>
-                                        <span className="text-xs text-primary-600 font-semibold bg-primary-50 px-2 py-1 rounded-full">{notifications.length} Total</span>
+                                        <div className="flex items-center gap-3">
+                                            {unreadCount > 0 && (
+                                                <button
+                                                    onClick={handleMarkAllAsRead}
+                                                    className="text-[10px] font-black text-primary-600 hover:text-primary-700 uppercase tracking-widest transition-colors"
+                                                >
+                                                    Mark all as read
+                                                </button>
+                                            )}
+                                            <span className="text-xs text-primary-600 font-semibold bg-primary-50 px-2 py-1 rounded-full">{notifications.length} Total</span>
+                                        </div>
                                     </div>
                                     <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                                         {notifications.length === 0 ? (
@@ -253,7 +300,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                             </div>
                                         ) : (
                                             notifications.map((notif) => (
-                                                <div key={notif.id} className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-default">
+                                                <div
+                                                    key={notif.id}
+                                                    onClick={() => handleNotificationClick(notif)}
+                                                    className={`p-4 border-b border-slate-50 transition-colors cursor-pointer relative group ${notif.is_read ? 'bg-white' : 'bg-primary-50/30'}`}
+                                                >
+                                                    {!notif.is_read && (
+                                                        <div className="absolute top-4 right-4 w-2 h-2 bg-primary-500 rounded-full"></div>
+                                                    )}
                                                     <div className="flex gap-3">
                                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${notif.type === 'urgent' ? 'bg-red-50 text-red-600' :
                                                             notif.type === 'warning' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
@@ -262,7 +316,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                                                 notif.type === 'warning' ? <AlertTriangle size={18} /> : <Info size={18} />}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-bold text-slate-900 truncate">{notif.title}</p>
+                                                            <p className={`text-sm truncate ${notif.is_read ? 'text-slate-600 font-medium' : 'text-slate-900 font-bold'}`}>{notif.title}</p>
                                                             <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{notif.message}</p>
                                                             <p className="text-[10px] text-slate-400 mt-2 font-medium text-right">
                                                                 {timeAgo(new Date(notif.created_at))}
