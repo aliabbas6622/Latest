@@ -15,7 +15,7 @@ import {
     ShieldCheck
 } from 'lucide-react';
 import Layout from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { studentService } from '../services/studentService';
 import { Link } from 'react-router-dom';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { UserRole } from '../types';
 
 interface RoleGateProps {
@@ -11,7 +11,7 @@ interface RoleGateProps {
 export const RoleGate: React.FC<RoleGateProps> = ({ children, allow, fallback = null }) => {
   const { user } = useAuth();
 
-  if (!user || !allow.includes(user.role)) {
+  if (!user || !allow.includes(user.role as any)) {
     return <>{fallback}</>;
   }
 

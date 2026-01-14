@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabase/client';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { UserRole } from '../types';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -153,15 +153,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 ${isCollapsed ? 'w-20' : 'w-64'}
             `}>
                 <div className={`p-6 border-b border-slate-100 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} gap-2 transition-all relative group`}>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-md shadow-primary-500/20 shrink-0">
-                            <span className="text-white font-bold text-lg">A</span>
+                    <div className="flex items-center gap-3">
+                        <div className={`shrink-0 transition-all duration-300 ${isCollapsed ? 'w-10' : 'w-40'}`}>
+                            <img src="/logo.png" alt="Aptivo Logo" className="w-full h-auto object-contain" />
                         </div>
-                        {!isCollapsed && (
-                            <span className="text-xl font-bold tracking-tight text-slate-800 whitespace-nowrap overflow-hidden transition-all duration-300">
-                                APTIVO
-                            </span>
-                        )}
                     </div>
 
                     {/* Manual Toggle Button (Desktop) */}
@@ -185,11 +180,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <>
                             <NavItem to="/super-admin/dashboard" icon={LayoutDashboard} label="Dashboard" isCollapsed={isCollapsed} />
                             <NavItem to="/super-admin/analysis" icon={TrendingUp} label="Platform Insights" isCollapsed={isCollapsed} />
-                            <NavItem to="/super-admin/questions" icon={BookOpen} label="Question Bank" isCollapsed={isCollapsed} />
-                            <NavItem to="/super-admin/materials" icon={Library} label="Study Materials" isCollapsed={isCollapsed} />
+                            <NavItem to="/super-admin/users" icon={Users} label="Admin Permissions" isCollapsed={isCollapsed} />
+                            <a
+                                href="http://localhost:3000"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-sm font-medium transition-all duration-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1 group`}
+                                title={isCollapsed ? "Content Manager" : ""}
+                            >
+                                <Library size={18} className="transition-colors duration-200 shrink-0 text-slate-400 group-hover:text-slate-600" />
+                                {!isCollapsed && <span className="whitespace-nowrap overflow-hidden transition-all">Content Manager</span>}
+                            </a>
                         </>
                     )}
-                    {user?.role === UserRole.INSTITUTION_ADMIN && (
+                    {user?.role === UserRole.ADMIN && (
                         <>
                             <NavItem to="/institution/dashboard" icon={LayoutDashboard} label="Dashboard" isCollapsed={isCollapsed} />
                             <NavItem to="/institution/analysis" icon={BarChart2} label="Campus Analysis" isCollapsed={isCollapsed} />
@@ -352,72 +356,77 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                         className="fixed inset-0 z-40 cursor-default"
                                         onClick={() => setIsDropdownOpen(false)}
                                     ></div>
-                                    <div className="absolute right-0 mt-3 w-56 bg-[#0f1115] rounded-2xl shadow-2xl border border-white/5 py-2 z-50 animate-scale-in origin-top-right overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                                        <div className="px-4 py-3 border-b border-white/5 bg-white/5">
-                                            <p className="text-sm font-black text-white truncate tracking-tight">{user?.name}</p>
-                                            <p className="text-[10px] uppercase font-bold text-white/40 truncate tracking-widest mt-0.5">{user?.role.replace('_', ' ')}</p>
+                                    <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 py-2 z-50 animate-scale-in origin-top-right overflow-hidden">
+                                        <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/80">
+                                            <p className="text-sm font-bold text-slate-900 truncate tracking-tight">{user?.name}</p>
+                                            <p className="text-[10px] uppercase font-bold text-slate-400 truncate tracking-widest mt-0.5">{user?.role.replace('_', ' ')}</p>
                                         </div>
 
                                         <div className="py-2">
                                             <Link
                                                 to="/profile"
-                                                className={`flex items-center gap-3 px-4 py-2.5 text-sm font-bold transition-all border-l-4 ${location.pathname === '/profile'
-                                                    ? 'text-white bg-white/10 border-primary-500'
-                                                    : 'text-white/60 hover:text-white hover:bg-white/5 border-transparent'
+                                                className={`flex items-center gap-3 px-5 py-2.5 text-sm font-semibold transition-all group ${location.pathname === '/profile'
+                                                    ? 'text-primary-600 bg-primary-50/50'
+                                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                                                     }`}
                                                 onClick={() => setIsDropdownOpen(false)}
                                             >
-                                                <UserIcon size={18} className={location.pathname === '/profile' ? 'text-primary-400' : ''} />
-                                                Public profile
+                                                <UserIcon size={18} className={`transition-transform group-hover:scale-110 ${location.pathname === '/profile' ? 'text-primary-500' : 'text-slate-400'}`} />
+                                                <span>Public profile</span>
                                             </Link>
 
                                             <Link
-                                                to="/profile" // Placeholder for account settings
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-white/60 hover:text-white hover:bg-white/5 transition-all text-left group"
+                                                to="/settings"
+                                                className={`flex items-center gap-3 px-5 py-2.5 text-sm font-semibold transition-all group ${location.pathname === '/settings'
+                                                    ? 'text-primary-600 bg-primary-50/50'
+                                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                                    }`}
                                                 onClick={() => setIsDropdownOpen(false)}
                                             >
-                                                <Settings size={18} className="group-hover:rotate-45 transition-transform" />
-                                                Account
+                                                <Settings size={18} className={`transition-transform group-hover:rotate-45 ${location.pathname === '/settings' ? 'text-primary-500' : 'text-slate-400'}`} />
+                                                <span>Account settings</span>
+                                            </Link>
+
+                                            <Link
+                                                to="/settings#appearance"
+                                                className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left group"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                            >
+                                                <Palette size={18} className="text-slate-400 group-hover:scale-110 transition-transform" />
+                                                <span>Appearance</span>
+                                            </Link>
+
+                                            <Link
+                                                to="/settings#accessibility"
+                                                className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left group"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                            >
+                                                <Accessibility size={18} className="text-slate-400 group-hover:scale-110 transition-transform" />
+                                                <span>Accessibility</span>
                                             </Link>
 
                                             <button
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-white/60 hover:text-white hover:bg-white/5 transition-all text-left"
-                                                onClick={() => setIsDropdownOpen(false)}
-                                            >
-                                                <Palette size={18} />
-                                                Appearance
-                                            </button>
-
-                                            <button
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-white/60 hover:text-white hover:bg-white/5 transition-all text-left"
-                                                onClick={() => setIsDropdownOpen(false)}
-                                            >
-                                                <Accessibility size={18} />
-                                                Accessibility
-                                            </button>
-
-                                            <button
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-white/60 hover:text-white hover:bg-white/5 transition-all text-left"
+                                                className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left group"
                                                 onClick={() => {
                                                     setIsDropdownOpen(false);
                                                     setIsNotifOpen(true);
                                                 }}
                                             >
-                                                <Bell size={18} />
-                                                Notifications
+                                                <Bell size={18} className="text-slate-400 group-hover:animate-bounce" />
+                                                <span>Notifications</span>
                                             </button>
 
-                                            <div className="h-px bg-white/5 my-2"></div>
+                                            <div className="h-px bg-slate-100 my-2"></div>
 
                                             <button
                                                 onClick={() => {
                                                     setIsDropdownOpen(false);
                                                     handleLogout();
                                                 }}
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500/80 hover:text-red-400 hover:bg-red-500/10 transition-all text-left group"
+                                                className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-bold text-red-500 hover:text-red-600 hover:bg-red-50 transition-all text-left group"
                                             >
                                                 <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
-                                                Sign Out
+                                                <span>Sign Out</span>
                                             </button>
                                         </div>
                                     </div>

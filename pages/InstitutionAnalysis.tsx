@@ -10,7 +10,7 @@ import {
     Download
 } from 'lucide-react';
 import Layout from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { analysisService } from '../services/analysisService';
 import {
     AreaChart,

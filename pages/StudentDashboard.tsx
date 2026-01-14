@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import { db } from '../services/mockBackend';
 import { studentService } from '../services/studentService';
 import { University } from '../types';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { Lock, ArrowRight, MapPin, AlertOctagon, Zap, BookOpen, TrendingUp, Bell, ChevronRight, Info, Target, LayoutGrid } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { StreakWidget } from '../components/StreakWidget';

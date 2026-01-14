@@ -2,18 +2,42 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../services/mockBackend';
+import { materialService } from '../services/materialService';
 import { StudyMaterial } from '../types';
 import { ArrowLeft, Zap, BookOpen } from 'lucide-react';
+import MarkdownRenderer from '../components/MarkdownRenderer';
 
 const StudentUnderstand = () => {
     const { univId, materialId } = useParams();
     const navigate = useNavigate();
     const [material, setMaterial] = useState<StudyMaterial | undefined>();
+    const [isMarkdown, setIsMarkdown] = useState(false);
 
     useEffect(() => {
-        if (materialId) {
-            setMaterial(db.getMaterial(materialId));
-        }
+        const loadContent = async () => {
+            if (!materialId) return;
+
+            // 1. Try fetching from real backend (Supabase)
+            try {
+                const realData = await materialService.getMaterialById(materialId);
+                if (realData) {
+                    setMaterial(realData);
+                    setIsMarkdown(true);
+                    return;
+                }
+            } catch (e) {
+                console.error("Failed to fetch from backend, falling back to mock", e);
+            }
+
+            // 2. Fallback to Mock Data (Legacy)
+            const mockData = db.getMaterial(materialId);
+            if (mockData) {
+                setMaterial(mockData);
+                setIsMarkdown(false);
+            }
+        };
+
+        loadContent();
     }, [materialId]);
 
     if (!material) return <Layout><div>Loading content...</div></Layout>;
@@ -41,10 +65,17 @@ const StudentUnderstand = () => {
 
                     <article className="bg-white p-8 md:p-14 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden">
                         {/* Reading Content */}
-                        <div
-                            className="prose prose-slate prose-lg max-w-none text-slate-700 leading-relaxed font-serif selection:bg-primary-100"
-                            dangerouslySetInnerHTML={{ __html: material.content }}
-                        />
+                        {isMarkdown ? (
+                            <MarkdownRenderer
+                                content={material.content}
+                                className="prose-lg font-serif text-slate-700 leading-relaxed selection:bg-primary-100"
+                            />
+                        ) : (
+                            <div
+                                className="prose prose-slate prose-lg max-w-none text-slate-700 leading-relaxed font-serif selection:bg-primary-100"
+                                dangerouslySetInnerHTML={{ __html: material.content }}
+                            />
+                        )}
 
                         {/* Summary Box (Bottom) */}
                         {material.summary && (

@@ -37,14 +37,17 @@ export type {
 
 // ===== AUTH FUNCTIONS =====
 
-export async function signUp(email: string, password: string, fullName: string) {
+export async function signUp(email: string, password: string, fullName: string, role: string = 'STUDENT') {
     if (!supabase) throw new Error('Supabase not configured');
 
     const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            data: { full_name: fullName }
+            data: {
+                full_name: fullName,
+                role: role
+            }
         }
     });
 

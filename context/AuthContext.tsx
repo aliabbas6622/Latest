@@ -143,7 +143,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setUser(loggedInUser);
         } catch (err: any) {
           console.error('Login profile fetch failed:', err);
-          // Fallback
+
+          // Fallback logic
           if (authUser.user_metadata?.role) {
             loggedInUser = {
               id: authUser.id,
@@ -154,9 +155,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             };
             setUser(loggedInUser);
           } else {
+            // Check for specific error types
             if (JSON.stringify(err).includes('recursion')) {
               throw new Error('Database error: Please run the fix_recursion.sql script.');
             }
+            if (err.message === 'Profile not found' || err.code === 'PGRST116') {
+              // Attempt one last fetch with a delay, in case trigger is slow
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              try {
+                const retryProfile = await getMyProfile();
+                if (retryProfile) {
+                  loggedInUser = {
+                    id: retryProfile.id,
+                    email: authUser.email || '',
+                    name: retryProfile.full_name,
+                    role: retryProfile.role,
+                    institutionId: retryProfile.institute_id,
+                  };
+                  setUser(loggedInUser);
+                  return loggedInUser;
+                }
+              } catch (retryErr) {
+                console.error('Retry profile fetch failed:', retryErr);
+              }
+
+              throw new Error('Account setup incomplete. Please contact support or try signing up again.');
+            }
+
             throw err;
           }
         }

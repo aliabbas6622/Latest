@@ -1,6 +1,6 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ModeProvider } from './context/ModeContext';
 import { UserRole } from './types';
 
@@ -10,8 +10,7 @@ import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import RegisterInstitution from './pages/RegisterInstitution';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
-import SuperAdminQuestions from './pages/SuperAdminQuestions';
-import SuperAdminMaterials from './pages/SuperAdminMaterials';
+import ContentManager from './pages/ContentManager';
 import InstitutionDashboard from './pages/InstitutionDashboard';
 import InstitutionUniversities from './pages/InstitutionUniversities';
 import StudentHome from './pages/StudentHome';
@@ -24,7 +23,11 @@ import StudentMistakes from './pages/StudentMistakes';
 import StudentAnalysis from './pages/StudentAnalysis';
 import InstitutionAnalysis from './pages/InstitutionAnalysis';
 import SuperAdminAnalysis from './pages/SuperAdminAnalysis';
+import SuperAdminTopics from './pages/SuperAdminTopics';
+import SuperAdminUsers from './pages/SuperAdminUsers';
+import StudentTopicPage from '@/pages/StudentTopicPage';
 import Profile from './pages/Profile';
+import Settings from './pages/Settings'; // Re-import to fix ReferenceError
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: UserRole[] }) => {
   const { user, isLoading } = useAuth();
@@ -32,7 +35,7 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
   if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">Loading Aptivo...</div>;
 
   if (!user) return <Navigate to="/login" replace />;
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+  if (!allowedRoles.includes(user.role as any)) return <Navigate to="/" replace />;
 
   return <>{children}</>;
 };
@@ -51,8 +54,17 @@ const App = () => {
             <Route
               path="/profile"
               element={
-                <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.INSTITUTION_ADMIN, UserRole.STUDENT]}>
+                <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.STUDENT]}>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.STUDENT]}>
+                  <Settings />
                 </ProtectedRoute>
               }
             />
@@ -76,18 +88,26 @@ const App = () => {
               }
             />
             <Route
-              path="/super-admin/questions"
+              path="/super-admin/content-manager"
               element={
                 <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
-                  <SuperAdminQuestions />
+                  <ContentManager />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/super-admin/materials"
+              path="/super-admin/curriculum"
               element={
                 <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
-                  <SuperAdminMaterials />
+                  <SuperAdminTopics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/super-admin/users"
+              element={
+                <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+                  <SuperAdminUsers />
                 </ProtectedRoute>
               }
             />
@@ -96,7 +116,7 @@ const App = () => {
             <Route
               path="/institution/dashboard"
               element={
-                <ProtectedRoute allowedRoles={[UserRole.INSTITUTION_ADMIN]}>
+                <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
                   <InstitutionDashboard />
                 </ProtectedRoute>
               }
@@ -104,7 +124,7 @@ const App = () => {
             <Route
               path="/institution/students"
               element={
-                <ProtectedRoute allowedRoles={[UserRole.INSTITUTION_ADMIN]}>
+                <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
                   <InstitutionDashboard />
                 </ProtectedRoute>
               }
@@ -112,7 +132,7 @@ const App = () => {
             <Route
               path="/institution/analysis"
               element={
-                <ProtectedRoute allowedRoles={[UserRole.INSTITUTION_ADMIN]}>
+                <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
                   <InstitutionAnalysis />
                 </ProtectedRoute>
               }
@@ -187,12 +207,12 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            {/* Apply Mode Practice (Mode B) */}
+            {/* Structured Topic Page (Canonical) */}
             <Route
-              path="/student/learn/:univId/apply/:topic"
+              path="/student/learn/:univId/topic/:topicId"
               element={
                 <ProtectedRoute allowedRoles={[UserRole.STUDENT]}>
-                  <StudentApply />
+                  <StudentTopicPage />
                 </ProtectedRoute>
               }
             />

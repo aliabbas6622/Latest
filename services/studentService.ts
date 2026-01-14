@@ -267,8 +267,8 @@ export const studentService = {
     },
 
     async updateUserTimezone(userId: string, timezone: string) {
-        const { error } = await supabase
-            .from('profiles')
+        const { error } = await (supabase
+            .from('profiles') as any)
             .update({ timezone } as any)
             .eq('id', userId);
 

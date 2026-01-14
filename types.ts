@@ -1,6 +1,6 @@
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
-  INSTITUTION_ADMIN = 'INSTITUTION_ADMIN',
+  ADMIN = 'ADMIN',
   STUDENT = 'STUDENT',
 }
 
@@ -18,6 +18,7 @@ export interface User {
   role: UserRole;
   institutionId?: string; // For Inst Admin and Student
   password?: string;
+  canUpload?: boolean; // New: Permission for Admins
 }
 
 export interface Institution {
@@ -40,6 +41,7 @@ export interface University {
 
 export interface StudyMaterial {
   id: string;
+  topicId: string; // Link to the canonical Topic
   universityId: string;
   subject: string;
   topic: string;
@@ -50,6 +52,7 @@ export interface StudyMaterial {
 
 export interface Question {
   id: string;
+  topicId: string; // Link to the canonical Topic
   universityId: string;
   subject: string;
   topic: string;

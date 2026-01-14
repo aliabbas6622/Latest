@@ -8,6 +8,8 @@ import ManageInstitutes from './pages/ManageInstitutes';
 import Notifications from './pages/Notifications';
 import HelpCenter from './pages/HelpCenter';
 import Login from './pages/Login';
+import LearningContentList from './pages/LearningContentList';
+import LearningContentEditor from './pages/LearningContentEditor';
 import { Menu } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -92,7 +94,15 @@ const AppContent = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/add" element={<UploadManagement />} />
             <Route path="/edit/:id" element={<UploadManagement />} />
+            <Route path="/add" element={<UploadManagement />} />
+            <Route path="/edit/:id" element={<UploadManagement />} />
             <Route path="/upload" element={<UploadManagement />} />
+
+            {/* Learning Content Routes */}
+            <Route path="/content" element={<LearningContentList />} />
+            <Route path="/content/add" element={<LearningContentEditor />} />
+            <Route path="/content/edit/:id" element={<LearningContentEditor />} />
+
             <Route path="/bank" element={<QuestionBank />} />
             <Route path="/institutes" element={<ManageInstitutes />} />
             <Route path="/notifications" element={<Notifications />} />

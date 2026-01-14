@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { studentService } from '../services/studentService';
 import { Question, StudentAttempt } from '../types';
 import { ArrowLeft, AlertOctagon, RefreshCw, Loader2 } from 'lucide-react';

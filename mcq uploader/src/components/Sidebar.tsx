@@ -1,6 +1,18 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LucideIcon, LayoutDashboard, PlusCircle, Upload, BookOpen, Building2, Bell, HelpCircle, LogOut, X } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Upload,
+  Database,
+  School,
+  Bell,
+  HelpCircle,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  X
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
@@ -19,10 +31,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
 
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/add', icon: PlusCircle, label: 'Upload Questions' },
-    { to: '/bank', icon: BookOpen, label: 'Question Bank' },
-    { to: '/institutes', icon: Building2, label: 'Institutions' },
-    { to: '/notifications', icon: Bell, label: 'Broadcasts' },
+    { to: '/add', icon: Upload, label: 'Upload Questions' },
+    { to: '/content', icon: FileText, label: 'Learning Content' },
+    { to: '/bank', icon: Database, label: 'Question Bank' },
+    ...(user?.role === 'SUPER_ADMIN' ? [
+      { to: '/institutes', icon: School, label: 'Institutions' },
+      { to: '/notifications', icon: Bell, label: 'Broadcasts' }
+    ] : []),
   ];
 
   const bottomNavItems = [

@@ -14,16 +14,28 @@ export interface Database {
                 Row: {
                     id: string;
                     name: string;
+                    domain: string | null;
+                    official_email: string | null;
+                    status: string;
+                    admin_id: string | null;
                     created_at: string;
                 };
                 Insert: {
                     id?: string;
                     name: string;
+                    domain?: string | null;
+                    official_email?: string | null;
+                    status?: string;
+                    admin_id?: string | null;
                     created_at?: string;
                 };
                 Update: {
                     id?: string;
                     name?: string;
+                    domain?: string | null;
+                    official_email?: string | null;
+                    status?: string;
+                    admin_id?: string | null;
                     created_at?: string;
                 };
             };
@@ -33,6 +45,7 @@ export interface Database {
                     role: UserRole;
                     institute_id: string | null;
                     full_name: string;
+                    timezone: string;
                     created_at: string;
                 };
                 Insert: {
@@ -40,6 +53,7 @@ export interface Database {
                     role?: UserRole;
                     institute_id?: string | null;
                     full_name: string;
+                    timezone?: string;
                     created_at?: string;
                 };
                 Update: {
@@ -47,12 +61,14 @@ export interface Database {
                     role?: UserRole;
                     institute_id?: string | null;
                     full_name?: string;
+                    timezone?: string;
                     created_at?: string;
                 };
             };
             questions: {
                 Row: {
                     id: string;
+                    university_id: string | null;
                     mode: string;
                     topic: string;
                     subtopic: string;
@@ -72,6 +88,7 @@ export interface Database {
                 };
                 Insert: {
                     id?: string;
+                    university_id?: string | null;
                     mode?: string;
                     topic: string;
                     subtopic: string;
@@ -91,6 +108,7 @@ export interface Database {
                 };
                 Update: {
                     id?: string;
+                    university_id?: string | null;
                     mode?: string;
                     topic?: string;
                     subtopic?: string;
@@ -105,6 +123,44 @@ export interface Database {
                     tags?: string[];
                     status?: ContentStatus;
                     created_by?: string;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+            };
+            study_materials: {
+                Row: {
+                    id: string;
+                    university_id: string;
+                    topic: string;
+                    subtopic: string;
+                    title: string;
+                    content: string | null;
+                    summary: string | null;
+                    status: ContentStatus;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    university_id: string;
+                    topic: string;
+                    subtopic: string;
+                    title: string;
+                    content?: string | null;
+                    summary?: string | null;
+                    status?: ContentStatus;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    university_id?: string;
+                    topic?: string;
+                    subtopic?: string;
+                    title?: string;
+                    content?: string | null;
+                    summary?: string | null;
+                    status?: ContentStatus;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -267,6 +323,58 @@ export interface Database {
                     mistake_type?: MistakeType;
                     note?: string | null;
                     created_at?: string;
+                };
+            };
+            daily_activity: {
+                Row: {
+                    user_id: string;
+                    activity_date: string;
+                    attempt_count: number;
+                    is_streak_day: boolean;
+                };
+                Insert: {
+                    user_id: string;
+                    activity_date: string;
+                    attempt_count?: number;
+                    is_streak_day?: boolean;
+                };
+                Update: {
+                    user_id?: string;
+                    activity_date?: string;
+                    attempt_count?: number;
+                    is_streak_day?: boolean;
+                };
+            };
+            user_streaks: {
+                Row: {
+                    user_id: string;
+                    current_streak: number;
+                    longest_streak: number;
+                    last_streak_date: string | null;
+                    grace_days: number;
+                    total_streak_days: number;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    user_id: string;
+                    current_streak?: number;
+                    longest_streak?: number;
+                    last_streak_date?: string | null;
+                    grace_days?: number;
+                    total_streak_days?: number;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    user_id?: string;
+                    current_streak?: number;
+                    longest_streak?: number;
+                    last_streak_date?: string | null;
+                    grace_days?: number;
+                    total_streak_days?: number;
+                    created_at?: string;
+                    updated_at?: string;
                 };
             };
         };

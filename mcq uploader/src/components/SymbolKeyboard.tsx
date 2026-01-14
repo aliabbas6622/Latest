@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+// Removing legacy any cast for React 19 compatibility
 import { Sigma, FlaskConical, Atom, X, ChevronRight, Hash } from 'lucide-react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
@@ -71,8 +72,8 @@ const SymbolKeyboard: React.FC<SymbolKeyboardProps> = ({ onInsert, onClose }) =>
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0 ${activeTab === tab
-                                    ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/30 scale-105'
-                                    : 'text-slate-400 hover:bg-slate-100/80'
+                                ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/30 scale-105'
+                                : 'text-slate-400 hover:bg-slate-100/80'
                                 }`}
                         >
                             {tab === 'Maths' && <Sigma size={14} />}

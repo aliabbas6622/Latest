@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aptivo - Expert Aptitude Preparation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Lexend:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3d8580", // Muted teal primary color
+                        "background-light": "#ffffff",
+                        "text-main": "#1e293b",
+                        "text-muted": "#64748b",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-color: #3d8580;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Lexend', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light text-text-main">
+<header class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100">
+<div class="max-w-[1100px] mx-auto px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-2">
+<div class="size-9 bg-primary rounded-md flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">auto_stories</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-slate-900">Aptivo</span>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium text-text-muted hover:text-primary transition-colors" href="#">Courses</a>
+<a class="text-sm font-medium text-text-muted hover:text-primary transition-colors" href="#">Materials</a>
+<a class="text-sm font-medium text-text-muted hover:text-primary transition-colors" href="#">Practice</a>
+</nav>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 text-sm font-medium text-text-muted hover:text-primary transition-all">Log in</button>
+<button class="bg-primary text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-[#34726d] transition-all">Get Started</button>
+</div>
+</div>
+</header>
+<main>
+<section class="pt-24 pb-32">
+<div class="max-w-[1100px] mx-auto px-6 text-center">
+<h1 class="text-6xl md:text-7xl font-bold tracking-tight text-slate-900 mb-8 leading-[1.1]">
+                    Master your future <br/>
+                    with <span class="text-primary">Aptivo</span>
+</h1>
+<p class="text-xl text-text-muted max-w-2xl mx-auto mb-12 leading-relaxed font-light">
+                    The simple, focused aptitude preparation platform designed to help students excel in competitive exams through structured learning.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+<button class="bg-primary text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-[#34726d] transition-all shadow-md">
+                        Start Learning
+                    </button>
+<button class="text-text-muted px-10 py-4 font-medium hover:text-primary transition-colors flex items-center gap-2">
+                        View curriculum <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<section class="py-24 bg-slate-50">
+<div class="max-w-[1100px] mx-auto px-6">
+<div class="text-center mb-16">
+<h2 class="text-3xl font-bold text-slate-900 mb-4">Preparation Tracks</h2>
+<p class="text-text-muted">Focused modules built for modern exam formats.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-10">
+<div class="bg-white p-10 rounded-2xl border border-slate-100 hover:shadow-sm transition-all text-center">
+<div class="size-14 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-2xl">calculate</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Quantitative</h3>
+<p class="text-text-muted text-sm leading-relaxed">Systematic approach to numbers, algebra, and logic-based math.</p>
+</div>
+<div class="bg-white p-10 rounded-2xl border border-slate-100 hover:shadow-sm transition-all text-center">
+<div class="size-14 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-2xl">translate</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Verbal Ability</h3>
+<p class="text-text-muted text-sm leading-relaxed">Master comprehension and advanced vocabulary for standardized tests.</p>
+</div>
+<div class="bg-white p-10 rounded-2xl border border-slate-100 hover:shadow-sm transition-all text-center">
+<div class="size-14 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-2xl">account_tree</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Logical Reasoning</h3>
+<p class="text-text-muted text-sm leading-relaxed">Develop analytical thinking through pattern recognition and problem sets.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24">
+<div class="max-w-[1100px] mx-auto px-6">
+<div class="flex flex-col md:flex-row items-center gap-20">
+<div class="md:w-1/2">
+<h2 class="text-4xl font-bold text-slate-900 mb-6 leading-tight">Focus on what <br/>actually matters.</h2>
+<p class="text-text-muted text-lg mb-8 leading-relaxed">
+                            We've removed the noise. Aptivo provides a clean, distraction-free environment where you can focus solely on your preparation goals.
+                        </p>
+<ul class="space-y-4">
+<li class="flex items-center gap-3 text-sm font-medium">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+                                Hand-picked practice problems
+                            </li>
+<li class="flex items-center gap-3 text-sm font-medium">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+                                Performance tracking dashboards
+                            </li>
+<li class="flex items-center gap-3 text-sm font-medium">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+                                Expert-curated study material
+                            </li>
+</ul>
+</div>
+<div class="md:w-1/2 bg-slate-100 rounded-3xl aspect-[4/3] flex items-center justify-center p-12">
+<div class="w-full bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
+<div class="h-10 bg-slate-50 border-b border-slate-100 flex items-center px-4 gap-2">
+<div class="size-2 rounded-full bg-slate-300"></div>
+<div class="size-2 rounded-full bg-slate-300"></div>
+<div class="size-2 rounded-full bg-slate-300"></div>
+</div>
+<div class="p-8 space-y-4">
+<div class="h-4 bg-slate-100 rounded-full w-3/4"></div>
+<div class="h-4 bg-slate-100 rounded-full w-full"></div>
+<div class="h-4 bg-slate-100 rounded-full w-1/2"></div>
+<div class="pt-6 grid grid-cols-2 gap-4">
+<div class="h-20 bg-primary/5 rounded-lg border border-primary/10"></div>
+<div class="h-20 bg-primary/5 rounded-lg border border-primary/10"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 bg-white">
+<div class="max-w-[1100px] mx-auto px-6">
+<div class="bg-primary rounded-3xl p-16 text-center text-white">
+<h2 class="text-4xl font-bold mb-6">Ready to start your journey?</h2>
+<p class="text-white/80 text-lg mb-10 max-w-xl mx-auto font-light">Join Aptivo today and get access to the most structured aptitude prep platform available.</p>
+<button class="bg-white text-primary px-10 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 transition-all shadow-lg">
+                        Create Free Account
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-white border-t border-slate-100 py-16">
+<div class="max-w-[1100px] mx-auto px-6">
+<div class="flex flex-col md:flex-row justify-between items-start gap-12 pb-12 border-b border-slate-100">
+<div class="max-w-xs">
+<div class="flex items-center gap-2 mb-6">
+<div class="size-8 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-lg">auto_stories</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-slate-900">Aptivo</span>
+</div>
+<p class="text-sm text-text-muted leading-relaxed">
+                        The focused aptitude preparation platform for ambitious students. Simple, effective, result-oriented.
+                    </p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-12">
+<div>
+<h5 class="text-sm font-bold text-slate-900 mb-6 uppercase tracking-wider">Product</h5>
+<ul class="space-y-4 text-sm text-text-muted">
+<li><a class="hover:text-primary transition-colors" href="#">Courses</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Practice</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Resources</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-sm font-bold text-slate-900 mb-6 uppercase tracking-wider">Company</h5>
+<ul class="space-y-4 text-sm text-text-muted">
+<li><a class="hover:text-primary transition-colors" href="#">About</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Support</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-sm font-bold text-slate-900 mb-6 uppercase tracking-wider">Social</h5>
+<ul class="space-y-4 text-sm text-text-muted">
+<li><a class="hover:text-primary transition-colors" href="#">LinkedIn</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Twitter</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-text-muted font-medium">
+<p>© 2024 Aptivo. All rights reserved.</p>
+<div class="flex gap-8">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</div>
+</footer>
+
+</body></html>

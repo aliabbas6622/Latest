@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { dbService } from '../services/dbService';
 import { Send, Bell, Loader2, Trash2, CheckCircle, ShieldAlert, Clock, User } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as motionOriginal, AnimatePresence } from 'framer-motion';
+const motion = motionOriginal as any;
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState<any[]>([]);
@@ -76,7 +77,7 @@ const Notifications = () => {
                                     className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-primary/20 outline-none font-bold text-sm transition-all"
                                 >
                                     <option value="STUDENT">All Students</option>
-                                    <option value="INSTITUTION_ADMIN">All Institution Admins</option>
+                                    <option value="ADMIN">All Institution Admins</option>
                                     <option value="ALL">Everyone</option>
                                 </select>
                             </div>

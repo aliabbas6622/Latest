@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserRole } from '../types';
 import { Check } from 'lucide-react';
@@ -25,7 +25,7 @@ const Login = () => {
             if (user) {
                 const role = user.role;
                 if (role === UserRole.SUPER_ADMIN) navigate('/super-admin/dashboard');
-                else if (role === UserRole.INSTITUTION_ADMIN) navigate('/institution/dashboard');
+                else if (role === UserRole.ADMIN) navigate('/institution/dashboard');
                 else if (role === UserRole.STUDENT) navigate('/student/home');
                 else {
                     setError('Unknown user role. Please contact support.');

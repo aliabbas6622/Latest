@@ -12,6 +12,10 @@ DROP TABLE IF EXISTS assignments CASCADE;
 DROP TABLE IF EXISTS set_questions CASCADE;
 DROP TABLE IF EXISTS apply_sets CASCADE;
 DROP TABLE IF EXISTS questions CASCADE;
+DROP TABLE IF EXISTS mcqs CASCADE; -- Cleanup legacy table
+DROP TABLE IF EXISTS study_materials CASCADE;
+DROP TABLE IF EXISTS daily_activity CASCADE;
+DROP TABLE IF EXISTS user_streaks CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
 DROP TABLE IF EXISTS institutes CASCADE;
 DROP TYPE IF EXISTS user_role CASCADE;
@@ -49,6 +53,7 @@ CREATE TABLE profiles (
     role user_role NOT NULL DEFAULT 'STUDENT',
     institute_id UUID REFERENCES institutes(id) ON DELETE SET NULL,
     full_name TEXT NOT NULL,
+    timezone TEXT DEFAULT 'UTC',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     -- Constraint: Students don't need an institute immediately, but Admins do.
     CONSTRAINT valid_relations CHECK (
@@ -75,7 +80,21 @@ CREATE TABLE questions (
     tags TEXT[] DEFAULT '{}',
     status content_status NOT NULL DEFAULT 'DRAFT',
     created_by UUID NOT NULL REFERENCES profiles(id),
-    university_id TEXT, -- Optional: Tag question to a specific uni context
+    university_id UUID REFERENCES institutes(id) ON DELETE SET NULL, -- Aligned with institutes
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 4.4 STUDY MATERIALS (Understand Mode)
+CREATE TABLE study_materials (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    university_id UUID NOT NULL REFERENCES institutes(id) ON DELETE CASCADE,
+    topic TEXT NOT NULL, -- Subject in App
+    subtopic TEXT NOT NULL, -- Topic in App
+    title TEXT NOT NULL,
+    content TEXT, -- HTML/Markdown content
+    summary TEXT,
+    status content_status NOT NULL DEFAULT 'DRAFT',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -141,6 +160,26 @@ CREATE TABLE mistake_log (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 4.9 STREAK SYSTEM
+CREATE TABLE daily_activity (
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    activity_date DATE NOT NULL,
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    is_streak_day BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (user_id, activity_date)
+);
+
+CREATE TABLE user_streaks (
+    user_id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+    current_streak INTEGER NOT NULL DEFAULT 0,
+    longest_streak INTEGER NOT NULL DEFAULT 0,
+    last_streak_date DATE,
+    grace_days INTEGER NOT NULL DEFAULT 0,
+    total_streak_days INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- 5. FUNCTION: SOLUTION GATING
 -- This prevents students from seeing answers by querying the table directly.
 CREATE OR REPLACE FUNCTION get_question_for_student(p_question_id UUID)
@@ -158,7 +197,7 @@ RETURNS TABLE (
     full_solution TEXT,
     has_attempted BOOLEAN
 )
-LANGUAGE plpgsql STABLE SECURITY DEFINER
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
     v_has_attempt BOOLEAN;
@@ -193,10 +232,13 @@ $$;
 ALTER TABLE institutes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE study_materials ENABLE ROW LEVEL SECURITY;
 ALTER TABLE apply_sets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE set_questions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assignments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_activity ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_streaks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mistake_log ENABLE ROW LEVEL SECURITY;
 
 -- 7. RECURSION-FREE RLS POLICIES
@@ -210,44 +252,53 @@ CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.
 -- Institutes
 CREATE POLICY "Institutes viewable by everyone" ON institutes FOR SELECT USING (true);
 CREATE POLICY "Super Admins manage institutes" ON institutes FOR ALL 
-    USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'SUPER_ADMIN');
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'SUPER_ADMIN');
 
 -- Questions
 CREATE POLICY "Questions viewable if published" ON questions FOR SELECT USING (status = 'PUBLISHED');
 CREATE POLICY "Super Admins manage questions" ON questions FOR ALL 
-    USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'SUPER_ADMIN');
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'SUPER_ADMIN');
+
+-- Study Materials
+CREATE POLICY "Public materials viewable if published" ON study_materials FOR SELECT USING (status = 'PUBLISHED');
+CREATE POLICY "Super Admins manage study_materials" ON study_materials FOR ALL 
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'SUPER_ADMIN');
 
 -- Apply Sets
 CREATE POLICY "Sets viewable if published" ON apply_sets FOR SELECT USING (status = 'PUBLISHED');
 CREATE POLICY "Super Admins manage sets" ON apply_sets FOR ALL 
-    USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'SUPER_ADMIN');
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'SUPER_ADMIN');
 
 -- Set Questions
 CREATE POLICY "Set contents viewable by everyone" ON set_questions FOR SELECT USING (true);
 CREATE POLICY "Super Admins manage set contents" ON set_questions FOR ALL 
-    USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'SUPER_ADMIN');
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'SUPER_ADMIN');
 
 -- Assignments
 CREATE POLICY "View own assignments" ON assignments FOR SELECT 
-    USING (student_id = auth.uid() OR institute_id = (auth.jwt() -> 'user_metadata' ->> 'institute_id')::UUID);
+    USING (student_id = auth.uid() OR institute_id = (auth.jwt() -> 'app_metadata' ->> 'institute_id')::UUID);
 CREATE POLICY "Admins manage assignments" ON assignments FOR ALL 
-    USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'ADMIN');
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'ADMIN');
 
 -- Attempts
 CREATE POLICY "View own attempts" ON attempts FOR SELECT USING (user_id = auth.uid());
 CREATE POLICY "Create own attempts" ON attempts FOR INSERT WITH CHECK (user_id = auth.uid());
 CREATE POLICY "Admins view institute attempts" ON attempts FOR SELECT 
-    USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'ADMIN');
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'ADMIN');
 
 -- Mistake Log
 CREATE POLICY "Manage own mistakes" ON mistake_log FOR ALL 
     USING (EXISTS (SELECT 1 FROM attempts WHERE attempts.id = mistake_log.attempt_id AND attempts.user_id = auth.uid()));
 
+-- Streak System
+CREATE POLICY "View own daily activity" ON daily_activity FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY "View own streaks" ON user_streaks FOR SELECT USING (user_id = auth.uid());
+
 -- 8. AUTOMATION TRIGGERS
 
 -- 8.1 Auto-update timestamps
 CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SET search_path = public AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
@@ -255,7 +306,9 @@ END;
 $$;
 
 CREATE TRIGGER questions_updated_at BEFORE UPDATE ON questions FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER study_materials_updated_at BEFORE UPDATE ON study_materials FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER apply_sets_updated_at BEFORE UPDATE ON apply_sets FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER user_streaks_updated_at BEFORE UPDATE ON user_streaks FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- 8.2 HANDLE NEW USERS & SYNC METADATA
 -- This function does two things:
@@ -283,9 +336,12 @@ BEGIN
         NULL
     );
 
-    -- Sync Metadata back to Auth (Breaking the RLS recursion loop)
+    -- Sync Metadata back to Auth (Using raw_app_meta_data for security)
     UPDATE auth.users 
-    SET raw_user_meta_data = 
+    SET raw_app_meta_data = 
+        COALESCE(raw_app_meta_data, '{}'::jsonb) || 
+        jsonb_build_object('role', v_role, 'institute_id', NULL),
+    raw_user_meta_data = 
         COALESCE(raw_user_meta_data, '{}'::jsonb) || 
         jsonb_build_object('role', v_role, 'institute_id', NULL)
     WHERE id = NEW.id;
@@ -297,6 +353,84 @@ $$;
 CREATE TRIGGER on_auth_user_created 
     AFTER INSERT ON auth.users 
     FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- 8.3 STREAK SYSTEM AUTOMATION
+CREATE OR REPLACE FUNCTION fn_update_daily_activity()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_timezone TEXT;
+    v_local_date DATE;
+    v_threshold INTEGER := 5; -- Set streak threshold
+BEGIN
+    SELECT timezone INTO v_timezone FROM profiles WHERE id = NEW.user_id;
+    IF v_timezone IS NULL THEN v_timezone := 'UTC'; END IF;
+    v_local_date := (NEW.submitted_at AT TIME ZONE v_timezone)::DATE;
+
+    INSERT INTO daily_activity (user_id, activity_date, attempt_count, is_streak_day)
+    VALUES (NEW.user_id, v_local_date, 1, FALSE)
+    ON CONFLICT (user_id, activity_date) DO UPDATE
+    SET attempt_count = daily_activity.attempt_count + 1,
+        is_streak_day = (daily_activity.attempt_count + 1 >= v_threshold);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER tr_update_daily_activity
+AFTER INSERT ON attempts
+FOR EACH ROW EXECUTE FUNCTION fn_update_daily_activity();
+
+CREATE OR REPLACE FUNCTION fn_update_user_streak()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_streak_record RECORD;
+    v_prev_date DATE;
+BEGIN
+    IF NEW.is_streak_day = TRUE AND (OLD.is_streak_day = FALSE OR OLD.is_streak_day IS NULL) THEN
+        SELECT * INTO v_streak_record FROM user_streaks WHERE user_id = NEW.user_id;
+        IF NOT FOUND THEN
+            INSERT INTO user_streaks (user_id, current_streak, longest_streak, last_streak_date, total_streak_days)
+            VALUES (NEW.user_id, 1, 1, NEW.activity_date, 1);
+        ELSE
+            v_prev_date := NEW.activity_date - INTERVAL '1 day';
+            IF v_streak_record.last_streak_date = NEW.activity_date THEN
+                RETURN NEW;
+            ELSIF v_streak_record.last_streak_date = v_prev_date THEN
+                UPDATE user_streaks
+                SET current_streak = current_streak + 1,
+                    longest_streak = GREATEST(longest_streak, current_streak + 1),
+                    last_streak_date = NEW.activity_date,
+                    total_streak_days = total_streak_days + 1,
+                    grace_days = grace_days + (CASE WHEN (total_streak_days + 1) % 7 = 0 THEN 1 ELSE 0 END),
+                    updated_at = NOW()
+                WHERE user_id = NEW.user_id;
+            ELSE
+                IF v_streak_record.grace_days > 0 AND v_streak_record.last_streak_date = (v_prev_date - INTERVAL '1 day') THEN
+                    UPDATE user_streaks
+                    SET current_streak = current_streak + 1,
+                        longest_streak = GREATEST(longest_streak, current_streak + 1),
+                        last_streak_date = NEW.activity_date,
+                        total_streak_days = total_streak_days + 1,
+                        grace_days = grace_days - 1,
+                        updated_at = NOW()
+                    WHERE user_id = NEW.user_id;
+                ELSE
+                    UPDATE user_streaks
+                    SET current_streak = 1,
+                        last_streak_date = NEW.activity_date,
+                        total_streak_days = total_streak_days + 1,
+                        updated_at = NOW()
+                    WHERE user_id = NEW.user_id;
+                END IF;
+            END IF;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER tr_update_user_streak
+AFTER UPDATE ON daily_activity
+FOR EACH ROW EXECUTE FUNCTION fn_update_user_streak();
 
 -- 9. (Optional) SEED DATA
 INSERT INTO institutes (name, domain, status) VALUES 

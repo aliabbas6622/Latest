@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import { db } from '../services/mockBackend';
 import { Institution, InstitutionStatus } from '../types';
 import { Check, X, ShieldAlert, CheckCircle, AlertCircle, Search, Building2, ArrowUpRight, TrendingUp } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { notificationService } from '../services/notificationService';
 import { Megaphone, Send, Info, AlertTriangle, Zap as UrgentIcon } from 'lucide-react';
@@ -35,7 +35,7 @@ const SuperAdminDashboard = () => {
     const handleApprove = async (inst: Institution) => {
         if (!user) return;
         try {
-            await db.approveInstitution(inst.id, user.role);
+            await db.approveInstitution(inst.id, user.role as any);
             setNotification({
                 type: 'success',
                 message: `Institution '${inst.name}' approved successfully. An admin account has been created for ${inst.officialEmail} with default password: Password@123`
@@ -54,7 +54,7 @@ const SuperAdminDashboard = () => {
     const handleReject = async (id: string) => {
         if (!user) return;
         try {
-            await db.rejectInstitution(id, user.role);
+            await db.rejectInstitution(id, user.role as any);
             setNotification({
                 type: 'success',
                 message: 'Institution registration rejected.'
@@ -117,7 +117,7 @@ const SuperAdminDashboard = () => {
                         onClick={() => window.open('http://localhost:3000', '_blank')}
                         className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 text-sm"
                     >
-                        <ShieldAlert size={18} /> Launch Admin Console
+                        <ShieldAlert size={18} /> Launch Content Manager
                     </button>
                 </div>
             </div>
@@ -159,14 +159,14 @@ const SuperAdminDashboard = () => {
                 <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"></div>
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="max-w-xl">
-                        <h2 className="text-2xl font-bold mb-2">Consolidated Admin Console</h2>
-                        <p className="text-slate-300">Manage all MCQs, Bulk Uploads, and Institution verification from the external Admin Console tool.</p>
+                        <h2 className="text-2xl font-bold mb-2">Content Manager</h2>
+                        <p className="text-slate-300">Manage all Learning Content and Question Banks directly from the dashboard.</p>
                     </div>
                     <button
                         onClick={() => window.open('http://localhost:3000', '_blank')}
                         className="bg-primary-500 text-slate-900 px-8 py-4 rounded-xl font-bold hover:bg-primary-400 transition-all shadow-lg flex items-center gap-2 whitespace-nowrap active:scale-95"
                     >
-                        Open Console <ArrowUpRight size={20} />
+                        Open Manager <ArrowUpRight size={20} />
                     </button>
                 </div>
             </div>

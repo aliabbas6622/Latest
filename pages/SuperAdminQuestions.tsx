@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import { questionService } from '../services/questionService';
 import { Question } from '../types';
 import { Trash2, Search, ExternalLink } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 
 const SuperAdminQuestions = () => {
     const { user } = useAuth();

@@ -4,7 +4,8 @@ import { Stats } from '../../types';
 import StatsCard from '../components/StatsCard';
 import Skeleton from '../components/Skeleton';
 import { Database, PieChart, Activity, ArrowUpRight, TrendingUp } from 'lucide-react';
-import { motion, Variants } from 'framer-motion';
+import { motion as motionOriginal, Variants } from 'framer-motion';
+const motion = motionOriginal as any;
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -111,6 +112,39 @@ const Dashboard = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          onClick={() => navigate('/content')}
+          className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-teal-500 cursor-pointer transition-all group hover:shadow-md"
+        >
+          <div className="flex items-center gap-4 mb-3">
+            <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Activity size={24} />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-textMain">Learning Content</h3>
+              <p className="text-sm text-textSecondary">Manage study materials</p>
+            </div>
+            <ArrowUpRight className="ml-auto text-slate-300 group-hover:text-teal-500 transition-colors" />
+          </div>
+        </div>
+        <div
+          onClick={() => navigate('/bank')}
+          className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-teal-500 cursor-pointer transition-all group hover:shadow-md"
+        >
+          <div className="flex items-center gap-4 mb-3">
+            <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Database size={24} />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-textMain">Question Bank</h3>
+              <p className="text-sm text-textSecondary">Manage MCQs</p>
+            </div>
+            <ArrowUpRight className="ml-auto text-slate-300 group-hover:text-teal-500 transition-colors" />
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
         <motion.div variants={item}>
           <StatsCard
@@ -175,7 +209,7 @@ const Dashboard = () => {
           </div>
         </motion.div>
       </div>
-    </motion.div>
+    </motion.div >
   );
 };
 

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { dbService } from '../services/dbService';
 import { Plus, Trash2, Building2, Globe, Mail, Loader2, Search, Save as SaveIcon, X, Settings, BookOpen, ChevronRight as ChevronIcon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as motionOriginal, AnimatePresence } from 'framer-motion';
+const motion = motionOriginal as any;
 import { SUBJECTS } from '../../constants';
 
 const ManageInstitutes = () => {

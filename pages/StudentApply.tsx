@@ -14,7 +14,7 @@ import {
     Trophy
 } from 'lucide-react';
 import Layout from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { questionService } from '../services/questionService';
 import { studentService } from '../services/studentService';
 import { Question } from '../types';

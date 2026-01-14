@@ -9,15 +9,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-router-dom": "6.22.3",
-    "lucide-react": "0.363.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-router-dom": "^7.11.0",
+    "lucide-react": "^0.562.0",
     "xlsx": "0.18.5",
-    "react-hook-form": "7.51.1",
-    "framer-motion": "11.0.8",
-    "katex": "0.16.9",
-    "@supabase/supabase-js": "^2.89.0"
+    "react-hook-form": "^7.54.2",
+    "framer-motion": "^11.18.2",
+    "katex": "^0.16.27",
+    "@supabase/supabase-js": "^2.89.0",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

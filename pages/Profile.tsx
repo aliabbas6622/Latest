@@ -1,6 +1,6 @@
 import React from 'react';
 import Layout from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { User, Mail, Shield, Building } from 'lucide-react';
 
 const Profile = () => {

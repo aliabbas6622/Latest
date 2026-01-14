@@ -11,13 +11,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<any | null>({
-        id: 'mock-id',
-        email: 'admin@aptivo.com',
-        user_metadata: { role: 'SUPER_ADMIN' },
-        role: 'SUPER_ADMIN'
-    });
-    const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState<any | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Check active sessions and sets the user
@@ -27,7 +22,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (session?.user) {
                 setUser({
                     ...session.user,
-                    role: session.user.user_metadata?.role || 'STUDENT'
+                    role: session.user.user_metadata?.role || 'STUDENT',
+                    can_upload: session.user.user_metadata?.can_upload ?? false,
+                    institute_id: session.user.user_metadata?.institute_id
                 });
             }
             setLoading(false);
@@ -40,7 +37,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (session?.user) {
                 setUser({
                     ...session.user,
-                    role: session.user.user_metadata?.role || 'STUDENT'
+                    role: session.user.user_metadata?.role || 'STUDENT',
+                    can_upload: session.user.user_metadata?.can_upload ?? false,
+                    institute_id: session.user.user_metadata?.institute_id
                 });
             } else {
                 setUser(null);
